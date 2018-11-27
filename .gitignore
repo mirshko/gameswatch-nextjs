@@ -1,0 +1,5 @@
+lib/sanity.js
+node_modules/
+.next
+logs 
+*.log
