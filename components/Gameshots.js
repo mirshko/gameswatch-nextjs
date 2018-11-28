@@ -6,9 +6,10 @@ import Router from 'next/router'
 import theme from '../utils/theme'
 import ThumbGameshot from '../components/ThumbGameshot'
 import VisibilitySensor from 'react-visibility-sensor'
+import sanity from '../lib/sanity'
 import styled, { keyframes } from 'styled-components'
 
-const numberOfGameshotsToLoad = 30
+const numberOfGameshotsToLoad = 9
 
 const slideUpGameshots = keyframes`
     from {
@@ -45,7 +46,8 @@ export default class Gameshots extends React.Component {
         super(props);
 
         this.state = {
-            display: "none",                                              
+            display: "none",       
+            gameshots: [],                                       
             numberOfLoadedGameshots: 0,
             loadMoreGameshots: true,
             windowWidth: 0, 
@@ -56,24 +58,81 @@ export default class Gameshots extends React.Component {
         this.hideModal = this.hideModal.bind(this)   
         this.handlePrevGameshot = this.handlePrevGameshot.bind(this)   
         this.handleNextGameshot = this.handleNextGameshot.bind(this) 
-        this.onKeyDown = this.onKeyDown.bind(this)                        
-        this.loadMoreGameshots = this.loadMoreGameshots.bind(this)   
-        this.updateWindowDimensions = this.updateWindowDimensions.bind(this);        
+        this.onKeyDown = this.onKeyDown.bind(this)                                
+        this.updateWindowDimensions = this.updateWindowDimensions.bind(this);                    
     }
     
-    componentDidMount () {        
-        this.setState({
-            display: "block"            
-        })        
+    componentDidMount () {                      
         document.addEventListener('keydown', this.onKeyDown)        
         window.addEventListener('resize', this.updateWindowDimensions)
-        this.updateWindowDimensions()
+        this.updateWindowDimensions()        
     }  
     
     componentWillUnmount () {
         document.removeEventListener('keydown', this.onKeyDown)
         window.removeEventListener('resize', this.updateWindowDimensions);
     }
+    
+    getGameshots = async (from, to) => {                      
+
+        let ref = ''
+
+        if (this.props.filterById !== undefined) { 
+            ref = '&& references("' + this.props.filterById + '")'
+        } 
+
+        const queryForGameshots = '*[_type == "gameshot" ' + ref + ' && !(_id in path("drafts.**"))] | order(_createdAt desc) {' +
+            '"id": _id,' +
+            '"media": {' +
+                '"img": {' +
+                    '"url": image.asset->url,' +
+                    '"aspectRatio": image.asset->metadata.dimensions.aspectRatio,' +
+                '},' +
+                '"video": {' +
+                    '"url": video.asset->url,' +
+                    '"format": video.format,' +
+                '},' +
+                '"palette": {' +
+                    '"dominant": image.asset->metadata.palette.dominant' +
+                '}' +
+            '},' +
+            '"device": {' +
+                '"name": device->name,' +
+                '"id": device->_id' +
+            '},' +
+            '"game": {' +
+                '"name": game->name,' +
+                '"id": game->_id,' +
+                '"numberOfGameshots": count(*[_type == "gameshot" && references(^.game->_id) && !(_id in path("drafts.**")) ]),' +
+                '"media": {' +
+                    '"imgThumbnail": {' +
+                        '"url": game->img_thumbnail.asset->url' +
+                    '},' +
+                    '"palette": {' +
+                        '"dominant": game->img_thumbnail.asset->metadata.palette.dominant' +
+                    '}' +
+                '}' +                        
+            '},' +
+            'name,' +
+            '"platform": {' +
+                '"name": device->platform->name,' +
+                '"id": device->platform->_id' +
+            '},' +        
+            '"tags": tags[]->{' +
+                '"id": _id,' +
+                'name' +
+            '} | order(name asc)' +                
+        '} [$from...$to]'
+        
+        const data = await sanity.fetch(queryForGameshots, {from, to})
+        
+        this.setState((prevState) => ({            
+            gameshots: prevState.gameshots.concat(data),
+            display: "block",
+            numberOfLoadedGameshots: prevState.numberOfLoadedGameshots + numberOfGameshotsToLoad,
+            loadMoreGameshots: true
+        }))        
+    }          
 
     updateWindowDimensions() {
         this.setState({ 
@@ -88,10 +147,10 @@ export default class Gameshots extends React.Component {
         })         
 
         const url = `${this.props.routerPathname}?gameshotIndex=${index}&id=${this.props.routerQueryId}`
-        const as = `/gameshot/${this.props.gameshots[index].id}`
+        const as = `/gameshot/${this.state.gameshots[index].id}`
         Router.push(url, as, {shallow: true})
         
-        this.props.updateDocTitle('"' + this.props.gameshots[index].name + '" from ' + this.props.gameshots[index].game.name)
+        this.props.updateDocTitle('"' + this.state.gameshots[index].name + '" from ' + this.state.gameshots[index].game.name)
         
     }
 
@@ -139,31 +198,24 @@ export default class Gameshots extends React.Component {
                 indexOfGameshotInModal: prevState.indexOfGameshotInModal - 1,                
             }), () => {
                 const href = `${this.props.routerPathname}?gameshotIndex=${this.state.indexOfGameshotInModal}&id=${this.props.routerQueryId}`
-                const as = `/gameshot/${this.props.gameshots[this.state.indexOfGameshotInModal].id}`
+                const as = `/gameshot/${this.state.gameshots[this.state.indexOfGameshotInModal].id}`
                 Router.push(href, as, {shallow: true})
-                this.props.updateDocTitle('"' + this.props.gameshots[this.state.indexOfGameshotInModal].name + '" from ' + this.props.gameshots[this.state.indexOfGameshotInModal].game.name)
+                this.props.updateDocTitle('"' + this.state.gameshots[this.state.indexOfGameshotInModal].name + '" from ' + this.state.gameshots[this.state.indexOfGameshotInModal].game.name)
             })
         }        
     }
 
     handleNextGameshot () {
-        if (this.state.indexOfGameshotInModal !== this.props.gameshots.slice(0, this.state.numberOfLoadedGameshots).length - 1) {            
+        if (this.state.indexOfGameshotInModal !== this.state.gameshots.length - 1) {            
             this.setState((prevState) => ({
                 indexOfGameshotInModal: prevState.indexOfGameshotInModal + 1,                
             }), () => {
                 const href = `${this.props.routerPathname}?gameshotIndex=${this.state.indexOfGameshotInModal}&id=${this.props.routerQueryId}`
-                const as = `/gameshot/${this.props.gameshots[this.state.indexOfGameshotInModal].id}`
+                const as = `/gameshot/${this.state.gameshots[this.state.indexOfGameshotInModal].id}`
                 Router.push(href, as, {shallow: true})
-                this.props.updateDocTitle('"' + this.props.gameshots[this.state.indexOfGameshotInModal].name + '" from ' + this.props.gameshots[this.state.indexOfGameshotInModal].game.name)
+                this.props.updateDocTitle('"' + this.state.gameshots[this.state.indexOfGameshotInModal].name + '" from ' + this.state.gameshots[this.state.indexOfGameshotInModal].game.name)
             })
         }
-    }
-
-    loadMoreGameshots () {                
-        this.setState((prevState) => ({            
-            numberOfLoadedGameshots: prevState.numberOfLoadedGameshots + numberOfGameshotsToLoad,
-            loadMoreGameshots: prevState.numberOfLoadedGameshots + numberOfGameshotsToLoad < this.props.gameshots.length ? true : false,
-        }))        
     }
 
     render () {
@@ -188,7 +240,7 @@ export default class Gameshots extends React.Component {
             transitionDuration: 0,            
         }
 
-        const gameshotThumbs = this.props.gameshots.slice(0, this.state.numberOfLoadedGameshots).map((gameshot, index) =>
+        const gameshotThumbs = this.state.gameshots.map((gameshot, index) =>
             <ThumbGameshot
                 context={this.props.context}                
                 key={gameshot.id} 
@@ -218,9 +270,9 @@ export default class Gameshots extends React.Component {
                         handlePrevGameshot=             {this.handlePrevGameshot}
                         handleNextGameshot=             {this.handleNextGameshot}
                         indexOfGameshotInModal=         {this.props.url.query.gameshotIndex}
-                        numberOfGameshots=              {this.props.gameshots.slice(0, this.state.numberOfLoadedGameshots).length}
+                        numberOfGameshots=              {this.state.gameshots.length}
                     >                        
-                        <Gameshot gameshot={this.props.gameshots[this.props.url.query.gameshotIndex]}/>
+                        <Gameshot gameshot={this.state.gameshots[this.props.url.query.gameshotIndex]}/>
                     </Modal>
                 }
 
@@ -234,7 +286,10 @@ export default class Gameshots extends React.Component {
                 </Masonry>
                 {
                     this.state.loadMoreGameshots &&
-                        <VisibilitySensor onChange={this.loadMoreGameshots}>
+                        <VisibilitySensor 
+                            onChange={(e) => this.getGameshots(this.state.numberOfLoadedGameshots, this.state.numberOfLoadedGameshots + numberOfGameshotsToLoad)}
+                            intervalDelay={500}
+                        >
                             <DivLoader>                                
                                 <img src="../static/icons/loader.svg" />
                             </DivLoader>                            

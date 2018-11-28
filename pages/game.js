@@ -46,51 +46,8 @@ export default class Game extends React.Component {
                 '},' +
                 '"urlImgHeader": img_header.asset->url,' + 
                 '"urlImgThumbnail": img_thumbnail.asset->url,' + 
-                '"numberOfGameshots": count(*[_type == "gameshot" && references($id) && !(_id in path("drafts.**"))]),' +                
-                '"gameshots": *[_type == "gameshot" && references($id) && !(_id in path("drafts.**"))] | order(_createdAt desc) { ' +
-                    '"id": _id,' +
-                    '"media": {' +
-                        '"img": {' +
-                            '"url": image.asset->url,' +
-                            '"aspectRatio": image.asset->metadata.dimensions.aspectRatio,' +
-                        '},' +
-                        '"video": {' +
-                            '"url": video.asset->url,' +
-                            '"format": video.format,' +
-                        '},' +
-                        '"palette": {' +
-                            '"dominant": image.asset->metadata.palette.dominant' +
-                        '}' +
-                    '},' +
-                    '"device": {' +
-                        '"name": device->name,' +
-                        '"id": device->_id' +
-                    '},' +
-                    '"game": {' +
-                        '"name": game->name,' +
-                        '"id": game->_id,' +
-                        '"numberOfGameshots": count(*[_type == "gameshot" && references(^.game->_id)]),' +
-                        '"media": {' +
-                            '"imgThumbnail": {' +
-                                '"url": game->img_thumbnail.asset->url' +
-                            '},' +
-                            '"palette": {' +
-                                '"dominant": game->img_thumbnail.asset->metadata.palette.dominant' +
-                            '}' +
-                        '}' +                        
-                    '},' +
-                    'name,' +
-                    '"platform": {' +
-                        '"name": device->platform->name,' +
-                        '"id": device->platform->_id' +
-                    '},' +        
-                    '"tags": tags[]->{' +
-                        '"id": _id,' +
-                        'name' +
-                    '} | order(name asc)' + 
-                '}' +
+                '"numberOfGameshots": count(*[_type == "gameshot" && references($id) && !(_id in path("drafts.**"))]),' +                                
             '} [0]' +
-
         '}'                        
         
         const data = await sanity.fetch(query, {id: req.query.id})
@@ -143,14 +100,14 @@ export default class Game extends React.Component {
                 </Head>
                 
                 <Gameshots                             
-                    context="game"
-                    gameshots={this.props.game.gameshots}                                                
+                    context="game"                    
                     routerPathname="/game"
                     routerQueryId={this.props.game.id}                            
                     routerAs={"/game/" + this.props.game.id}
                     updateDocTitle={this.updateDocTitle}
                     docTitle={this.props.docTitle}
                     url={this.props.url}
+                    filterById={this.props.game.id}                    
                 ></Gameshots> 
                 
                 <DivCopyright>{copyright}</DivCopyright>

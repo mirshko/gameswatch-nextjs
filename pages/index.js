@@ -92,48 +92,6 @@ export default class Index extends React.Component {
             //     '"numberOfGameshots": count(*[_type == "gameshot" && references(^._id) && !(_id in path("drafts.**"))])' + 
             // '} [0...10000],' +
 
-            '"recentGameshots": *[_type == "gameshot" && !(_id in path("drafts.**"))] | order(_createdAt desc) {' +
-                '"id": _id,' +
-                '"media": {' +
-                    '"img": {' +
-                        '"url": image.asset->url,' +
-                        '"aspectRatio": image.asset->metadata.dimensions.aspectRatio,' +
-                    '},' +
-                    '"video": {' +
-                        '"url": video.asset->url,' +
-                        '"format": video.format,' +
-                    '},' +
-                    '"palette": {' +
-                        '"dominant": image.asset->metadata.palette.dominant' +
-                    '}' +
-                '},' +
-                '"device": {' +
-                    '"name": device->name,' +
-                    '"id": device->_id' +
-                '},' +
-                '"game": {' +
-                    '"name": game->name,' +
-                    '"id": game->_id,' +
-                    '"numberOfGameshots": count(*[_type == "gameshot" && references(^.game->_id) && !(_id in path("drafts.**")) ]),' +
-                    '"media": {' +
-                        '"imgThumbnail": {' +
-                            '"url": game->img_thumbnail.asset->url' +
-                        '},' +
-                        '"palette": {' +
-                            '"dominant": game->img_thumbnail.asset->metadata.palette.dominant' +
-                        '}' +
-                    '}' +                        
-                '},' +
-                'name,' +
-                '"platform": {' +
-                    '"name": device->platform->name,' +
-                    '"id": device->platform->_id' +
-                '},' +        
-                '"tags": tags[]->{' +
-                    '"id": _id,' +
-                    'name' +
-                '} | order(name asc)' +                
-            '} [0...100]' +
         '}'        
             
         const data = await sanity.fetch(query)
@@ -253,13 +211,12 @@ export default class Index extends React.Component {
                         </Wrapper>                        
                         <Gameshots                             
                             context="home"
-                            docTitle={this.props.docTitle}
-                            gameshots={this.props.recentGameshots}                                                        
+                            docTitle={this.props.docTitle}                            
                             routerPathname="/"
                             routerQueryId=""
                             routerAs="/"
                             updateDocTitle={this.updateDocTitle}                            
-                            url={this.props.url}
+                            url={this.props.url}                            
                         ></Gameshots> 
                     
                 </Container>
