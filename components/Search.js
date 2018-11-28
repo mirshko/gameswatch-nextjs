@@ -67,7 +67,7 @@ export default class Search extends React.Component {
         ]
         
         this.setState({
-            suggestions: searchResults
+            suggestions: searchResults.filter(section => section.searchResults.length > 0)
         })        
     }
     
@@ -89,7 +89,7 @@ export default class Search extends React.Component {
         </div>        
     )
 
-    renderSectionTitle = (section) => (<p>Hm</p>)
+    renderSectionTitle = (section) => ( null )
 
     onSuggestionsFetchRequested = (value) => {
         this.getSuggestions(value)
