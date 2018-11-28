@@ -4,6 +4,7 @@ import sanity from '../lib/sanity'
 import ThumbGame from '../components/ThumbGame'
 import theme from '../utils/theme'
 import styled from 'styled-components'
+import VisibilitySensor from 'react-visibility-sensor'
 
 const Container = styled.div`
     width: 100%; 
@@ -44,15 +45,38 @@ const GameThumbnailWrapper = styled.div`
     }
 `
 
+const DivLoader = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 40px;
+    margin-bottom: 40px;
+`
+
 export default class Games extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {            
+
+        this.state = {                   
+            games: [],
+            numberOfLoadedGames: 0,
+            loadMoreGames: true,     
             windowWidth: 0,            
-            display: "none",            
+            display: "none",             
         }                    
-        this.updateWindowDimensions = this.updateWindowDimensions.bind(this);        
+
+        this.updateWindowDimensions = this.updateWindowDimensions.bind(this)
+    }
+
+    static async getInitialProps() { 
+        
+        const queryForNumberOfGames = 'count(*[_type == "game" && !(_id in path("drafts.**"))])'
+        const data = await sanity.fetch(queryForNumberOfGames)
+        
+        return {
+            numberOfGames: data,            
+        }
     }
 
     componentDidMount () {                        
@@ -73,29 +97,29 @@ export default class Games extends React.Component {
         })
     }
 
-    static async getInitialProps() {
+    getGames = async (from, to) => {
+        
+        const queryForGames = '*[_type == "game" && !(_id in path("drafts.**"))] | order(name asc) {' +
+            '"id": _id,' +
+            'name, ' +            
+            '"media": {' +
+                '"imgThumbnail": {' +
+                    '"url": img_thumbnail.asset->url,' +                    
+                '},' +                
+                '"palette": img_thumbnail.asset->metadata.palette' +                                            
+            '},' +
+            '"numberOfGameshots": count(*[_type == "gameshot" && references(^._id) && !(_id in path("drafts.**"))])' + 
+        '} [$from...$to]'        
+        
+        const data = await sanity.fetch(queryForGames, {from: from, to: to})
 
-        const query = '{' +            
-            '"games": *[_type == "game" && !(_id in path("drafts.**"))] | order(name asc) {' +
-                '"id": _id,' +
-                'name, ' +            
-                '"media": {' +
-                    '"imgThumbnail": {' +
-                        '"url": img_thumbnail.asset->url,' +                    
-                    '},' +                
-                    '"palette": img_thumbnail.asset->metadata.palette' +                                            
-                '},' +
-                '"numberOfGameshots": count(*[_type == "gameshot" && references(^._id) && !(_id in path("drafts.**"))])' + 
-            '}' +
-        
-        '}'
-        
-        const data = await sanity.fetch(query) 
-        
-        return {
-            games: data.games,            
-        }
-    }
+        this.setState((prevState) => ({            
+            games: prevState.games.concat(data),            
+            numberOfLoadedGames: prevState.numberOfLoadedGames + data.length,            
+            loadMoreGames: this.props.numberOfGames == prevState.numberOfLoadedGames + data.length ? false : true,            
+        }))
+
+    }    
 
     render() {
 
@@ -107,7 +131,7 @@ export default class Games extends React.Component {
             marginLeftThumbnails = 0
         }
 
-        const thumbsOfGames = this.props.games.map((game) =>
+        const thumbsOfGames = this.state.games.map((game) =>
             <GameThumbnailWrapper key={game.id}>
                 <ThumbGame 
                     id={game.id}                    
@@ -141,9 +165,20 @@ export default class Games extends React.Component {
                 <Container display={this.state.display}>
                     <ThumbnailsContainer width={widthThumbnails}>
                         <Thumbnails marginLeft={marginLeftThumbnails}>
-                            {thumbsOfGames}
+                            {thumbsOfGames}                            
                         </Thumbnails>        
-                    </ThumbnailsContainer>                    
+                    </ThumbnailsContainer> 
+                    {
+                        this.state.loadMoreGames &&
+                            <VisibilitySensor
+                                onChange={(e) => this.getGames(this.state.numberOfLoadedGames, this.state.numberOfLoadedGames + theme.variables.numberOfGamesToGet)}
+                                intervalDelay={500}
+                            >
+                                <DivLoader>                                
+                                    <img src="../static/icons/loader.svg" />
+                                </DivLoader>                            
+                            </VisibilitySensor>                
+                    }                   
                 </Container>
             </Page>
         )

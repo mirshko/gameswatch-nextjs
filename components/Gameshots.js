@@ -46,7 +46,7 @@ export default class Gameshots extends React.Component {
             gameshots: [],                                       
             numberOfLoadedGameshots: 0,
             loadMoreGameshots: true,
-            numberOfgameshots: undefined,
+            numberOfGameshots: undefined,
             windowWidth: 0, 
             indexOfGameshotInModal: this.props.url.query.gameshotIndex,           
         }    
