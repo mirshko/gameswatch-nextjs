@@ -13,6 +13,7 @@ export default class Category extends React.Component {
         }     
         
         this.updateDocTitle = this.updateDocTitle.bind(this) 
+        // this.gameshots = React.createRef()
     }
 
     static async getInitialProps(req) {
@@ -44,6 +45,7 @@ export default class Category extends React.Component {
         // Update the doc title when the props.docTitle has changed
         if (this.props.docTitle !== nextProps.docTitle) {
             this.updateDocTitle(nextProps.docTitle)
+            // this.gameshots.current.restartGameshots()
         }        
     }    
 
@@ -84,6 +86,7 @@ export default class Category extends React.Component {
                     updateDocTitle={this.updateDocTitle}                                        
                     url={this.props.url}
                     filterById={this.props.tag.id}
+                    // ref={this.gameshots}                  
                 ></Gameshots> 
 
             </Page>

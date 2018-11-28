@@ -9,8 +9,6 @@ import VisibilitySensor from 'react-visibility-sensor'
 import sanity from '../lib/sanity'
 import styled, { keyframes } from 'styled-components'
 
-const numberOfGameshotsToLoad = 9
-
 const slideUpGameshots = keyframes`
     from {
         margin-top: 60px;
@@ -25,7 +23,6 @@ const slideUpGameshots = keyframes`
 const DivGameshots = styled.div`
     margin: 0 auto 40px auto;     
     width: ${props => props.width}px;
-    display: ${props => props.display};
     /* animation: ${slideUpGameshots} 0.15s ease-in; */
     @media (max-width: ${theme.breakpoints.fullWidthLayout}px) {
         width: 100%;
@@ -45,8 +42,7 @@ export default class Gameshots extends React.Component {
     constructor(props) {
         super(props);
 
-        this.state = {
-            display: "none",       
+        this.state = {            
             gameshots: [],                                       
             numberOfLoadedGameshots: 0,
             loadMoreGameshots: true,
@@ -81,58 +77,75 @@ export default class Gameshots extends React.Component {
             ref = '&& references("' + this.props.filterById + '")'
         } 
 
-        const queryForGameshots = '*[_type == "gameshot" ' + ref + ' && !(_id in path("drafts.**"))] | order(_createdAt desc) {' +
-            '"id": _id,' +
-            '"media": {' +
-                '"img": {' +
-                    '"url": image.asset->url,' +
-                    '"aspectRatio": image.asset->metadata.dimensions.aspectRatio,' +
-                '},' +
-                '"video": {' +
-                    '"url": video.asset->url,' +
-                    '"format": video.format,' +
-                '},' +
-                '"palette": {' +
-                    '"dominant": image.asset->metadata.palette.dominant' +
-                '}' +
-            '},' +
-            '"device": {' +
-                '"name": device->name,' +
-                '"id": device->_id' +
-            '},' +
-            '"game": {' +
-                '"name": game->name,' +
-                '"id": game->_id,' +
-                '"numberOfGameshots": count(*[_type == "gameshot" && references(^.game->_id) && !(_id in path("drafts.**")) ]),' +
+        const queryForGameshots = '{' + 
+            // '"numberOfGameshots": count(*[_type == "gameshot"' + ref + ']),' +
+            '"gameshots": *[_type == "gameshot" ' + ref + ' && !(_id in path("drafts.**"))] | order(_createdAt desc) {' +
+                '"id": _id,' +
                 '"media": {' +
-                    '"imgThumbnail": {' +
-                        '"url": game->img_thumbnail.asset->url' +
+                    '"img": {' +
+                        '"url": image.asset->url,' +
+                        '"aspectRatio": image.asset->metadata.dimensions.aspectRatio,' +
+                    '},' +
+                    '"video": {' +
+                        '"url": video.asset->url,' +
+                        '"format": video.format,' +
                     '},' +
                     '"palette": {' +
-                        '"dominant": game->img_thumbnail.asset->metadata.palette.dominant' +
+                        '"dominant": image.asset->metadata.palette.dominant' +
                     '}' +
-                '}' +                        
-            '},' +
-            'name,' +
-            '"platform": {' +
-                '"name": device->platform->name,' +
-                '"id": device->platform->_id' +
-            '},' +        
-            '"tags": tags[]->{' +
-                '"id": _id,' +
-                'name' +
-            '} | order(name asc)' +                
-        '} [$from...$to]'
+                '},' +
+                '"device": {' +
+                    '"name": device->name,' +
+                    '"id": device->_id' +
+                '},' +
+                '"game": {' +
+                    '"name": game->name,' +
+                    '"id": game->_id,' +
+                    '"numberOfGameshots": count(*[_type == "gameshot" && references(^.game->_id) && !(_id in path("drafts.**")) ]),' +
+                    '"media": {' +
+                        '"imgThumbnail": {' +
+                            '"url": game->img_thumbnail.asset->url' +
+                        '},' +
+                        '"palette": {' +
+                            '"dominant": game->img_thumbnail.asset->metadata.palette.dominant' +
+                        '}' +
+                    '}' +                        
+                '},' +
+                'name,' +
+                '"platform": {' +
+                    '"name": device->platform->name,' +
+                    '"id": device->platform->_id' +
+                '},' +        
+                '"tags": tags[]->{' +
+                    '"id": _id,' +
+                    'name' +
+                '} | order(name asc)' +                
+            '} [$from...$to]' +
+        '}'
         
         const data = await sanity.fetch(queryForGameshots, {from, to})
         
         this.setState((prevState) => ({            
-            gameshots: prevState.gameshots.concat(data),
-            display: "block",
-            numberOfLoadedGameshots: prevState.numberOfLoadedGameshots + numberOfGameshotsToLoad,
-            loadMoreGameshots: true
+            gameshots: prevState.gameshots.concat(data.gameshots),            
+            numberOfLoadedGameshots: prevState.numberOfLoadedGameshots + data.gameshots.length,
+            loadMoreGameshots: data.gameshots.length == 0 ? false : true,            
         }))        
-    }          
+    }   
+    
+    restartGameshots () {
+        this.setState({
+            gameshots: [],
+            numberOfLoadedGameshots: 0,
+            loadMoreGameshots: true,
+        })
+    }
+
+    componentDidUpdate (prevProps) {
+        if (this.props.filterById !== prevProps.filterById) {
+            this.restartGameshots()
+        }
+    }
+
 
     updateWindowDimensions() {
         this.setState({ 
@@ -259,7 +272,6 @@ export default class Gameshots extends React.Component {
 
         return (
             <DivGameshots
-                display={this.state.display}
                 width={masonryWidth - theme.sizes.gapHorizontalThumbGameshot}
             >                    
                 {this.props.url.query.gameshotIndex && bodyStyle}
@@ -287,7 +299,7 @@ export default class Gameshots extends React.Component {
                 {
                     this.state.loadMoreGameshots &&
                         <VisibilitySensor 
-                            onChange={(e) => this.getGameshots(this.state.numberOfLoadedGameshots, this.state.numberOfLoadedGameshots + numberOfGameshotsToLoad)}
+                            onChange={(e) => this.getGameshots(this.state.numberOfLoadedGameshots, this.state.numberOfLoadedGameshots + theme.variables.numberOfGameshotsToGet)}
                             intervalDelay={500}
                         >
                             <DivLoader>                                
