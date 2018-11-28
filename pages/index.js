@@ -50,13 +50,13 @@ const GameThumbnailWrapper = styled.div`
     }    
 `
 
-const RecentTags = styled.div`
-    display: flex;
-    flex-direction: row; 
-    flex-wrap: wrap;                  
-    width: 100%; 
-    max-width: ${theme.sizes.widthThumbGameshot * 3 + theme.sizes.gapHorizontalThumbGameshot * 3}px;
-` 
+// const RecentTags = styled.div`
+//     display: flex;
+//     flex-direction: row; 
+//     flex-wrap: wrap;                  
+//     width: 100%; 
+//     max-width: ${theme.sizes.widthThumbGameshot * 3 + theme.sizes.gapHorizontalThumbGameshot * 3}px;
+// ` 
 
 export default class Index extends React.Component {
     
@@ -86,6 +86,8 @@ export default class Index extends React.Component {
                 '},' +
             '} [0...8],' +
 
+            '"numberOfAllGameshots": count(*[_type == "gameshot" && !(_id in path("drafts.**"))])' +                                
+
             // '"recentTags": *[_type == "tag" && !(_id in path("drafts.**"))] | order(name asc) {' +
             //     '"id": _id,' +
             //     'name,' +
@@ -100,10 +102,10 @@ export default class Index extends React.Component {
         // recentTags = recentTags.slice(0, 30)
 
         return {                     
-            recentGames: data.recentGames,
+            recentGames: data.recentGames,                        
+            docTitle: "GamesWatch – Games, curated.",
+            numberOfGameshots: data.numberOfAllGameshots
             // recentTags: recentTags,
-            recentGameshots: data.recentGameshots,
-            docTitle: "GamesWatch – Games, curated."
         }
     }        
     
@@ -216,7 +218,8 @@ export default class Index extends React.Component {
                             routerQueryId=""
                             routerAs="/"
                             updateDocTitle={this.updateDocTitle}                            
-                            url={this.props.url}                            
+                            url={this.props.url}  
+                            numberOfGameshots={this.props.numberOfGameshots}                          
                         ></Gameshots> 
                     
                 </Container>

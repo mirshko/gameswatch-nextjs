@@ -110,6 +110,7 @@ export default class Game extends React.Component {
                     docTitle={this.props.docTitle}
                     url={this.props.url}
                     filterById={this.props.game.id}  
+                    numberOfGameshots={this.props.game.numberOfGameshots}
                     // ref={this.gameshots}                  
                 ></Gameshots> 
                 

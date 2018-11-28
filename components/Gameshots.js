@@ -46,6 +46,7 @@ export default class Gameshots extends React.Component {
             gameshots: [],                                       
             numberOfLoadedGameshots: 0,
             loadMoreGameshots: true,
+            numberOfgameshots: undefined,
             windowWidth: 0, 
             indexOfGameshotInModal: this.props.url.query.gameshotIndex,           
         }    
@@ -77,8 +78,7 @@ export default class Gameshots extends React.Component {
             ref = '&& references("' + this.props.filterById + '")'
         } 
 
-        const queryForGameshots = '{' + 
-            // '"numberOfGameshots": count(*[_type == "gameshot"' + ref + ']),' +
+        const queryForGameshots = '{' +                                     
             '"gameshots": *[_type == "gameshot" ' + ref + ' && !(_id in path("drafts.**"))] | order(_createdAt desc) {' +
                 '"id": _id,' +
                 '"media": {' +
@@ -127,8 +127,8 @@ export default class Gameshots extends React.Component {
         
         this.setState((prevState) => ({            
             gameshots: prevState.gameshots.concat(data.gameshots),            
-            numberOfLoadedGameshots: prevState.numberOfLoadedGameshots + data.gameshots.length,
-            loadMoreGameshots: data.gameshots.length == 0 ? false : true,            
+            numberOfLoadedGameshots: prevState.numberOfLoadedGameshots + data.gameshots.length,            
+            loadMoreGameshots: this.props.numberOfGameshots == prevState.numberOfLoadedGameshots + data.gameshots.length ? false : true,            
         }))        
     }   
     

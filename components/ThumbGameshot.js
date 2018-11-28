@@ -40,7 +40,7 @@ const Overlay = styled.div`
 `
 
 const DivVideo = styled.div`
-    background-color: ${props => props.backgroundColor};
+    background-color: ${props => props.backgroundcolor};
     border-radius: 4px;                    
     overflow: hidden;
     height: ${props => props.height};
@@ -117,7 +117,7 @@ export default class ThumbGameshot extends React.Component {
                             Object.keys(this.props.gameshot.media.video).length !== 0 ? ( 
                                 <DivVideo 
                                     // backgroundColor={this.props.gameshot.media.palette.dominant.background}   
-                                    backgroundColor={theme.colors.tint}                                 
+                                    backgroundcolor={theme.colors.tint}                                 
                                     height={theme.sizes.widthThumbGameshot / this.props.gameshot.media.img.aspectRatio}
                                     className={"video"}
                                 >

@@ -89,7 +89,7 @@ export default class Search extends React.Component {
         </div>        
     )
 
-    renderSectionTitle = (section) => null
+    renderSectionTitle = (section) => (<p>Hm</p>)
 
     onSuggestionsFetchRequested = (value) => {
         this.getSuggestions(value)

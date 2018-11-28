@@ -23,13 +23,13 @@ export default class Category extends React.Component {
                 '"id": _id,' +
                 'name,' +
                 '"numberOfGameshots": count(*[_type == "gameshot" && references($id) && !(_id in path("drafts.**"))]),' +                
-                '"gameshots": {' +
+                '"gameshots": *[_type == "gameshot" && references($id) && !(_id in path("drafts.**"))] | order(_createdAt desc) { ' +
                     '"media": {' +
                         '"img": {' +
                             '"url": image.asset->url,' + 
                         '}' +
                     '}' +
-                '}' +
+                '} [0]' +
             '} [0]' +            
         '}'               
         
@@ -86,6 +86,7 @@ export default class Category extends React.Component {
                     updateDocTitle={this.updateDocTitle}                                        
                     url={this.props.url}
                     filterById={this.props.tag.id}
+                    numberOfGameshots={this.props.tag.numberOfGameshots}
                     // ref={this.gameshots}                  
                 ></Gameshots> 
 
