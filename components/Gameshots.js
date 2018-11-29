@@ -74,10 +74,12 @@ export default class Gameshots extends React.Component {
         window.removeEventListener('resize', this.updateWindowDimensions);
     }
     
-    getGameshots = async (from, to) => {                      
+    getGameshots = async (from, to, isVisible) => {                      
+        
+        // Don't run if the loader is hidden
+        if (!isVisible) { return }
 
         let ref = ''
-
         if (this.props.filterById !== undefined) { 
             ref = '&& references("' + this.props.filterById + '")'
         } 
@@ -304,8 +306,8 @@ export default class Gameshots extends React.Component {
                 {
                     this.state.loadMoreGameshots &&
                         <VisibilitySensor 
-                            onChange={(e) => this.getGameshots(this.state.numberOfLoadedGameshots, this.state.numberOfLoadedGameshots + theme.variables.numberOfGameshotsToGet)}
-                            intervalDelay={500}
+                            onChange={(e) => this.getGameshots(this.state.numberOfLoadedGameshots, this.state.numberOfLoadedGameshots + theme.variables.numberOfGameshotsToGet, e)}
+                            intervalDelay={800}
                         >
                             <DivLoader>                                
                                 <img src="../static/icons/loader.svg" />
