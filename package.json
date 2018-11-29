@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node server.js",
+    "dev": "next",
     "build": "next build",
     "start": "NODE_ENV=production node server.js"
   },
@@ -13,7 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@sanity/client": "^0.134.0",
+    "@sanity/client": "^0.134.2",
     "color": "^3.0.0",
     "compression": "^1.7.3",
     "emotion": "^9.2.10",
