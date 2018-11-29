@@ -104,7 +104,7 @@ export default class Menu extends React.Component {
                         activeNavItem={this.props.activeNavItem}
                         value={"categories"}
                         isHeaderImageShown={this.props.isHeaderImageShown}
-                        href="/categories?categoryTypeId=e3460957-0043-4f8b-8991-19b4ee5f9868"
+                        href="/categories/e3460957-0043-4f8b-8991-19b4ee5f9868"                        
                         title="Categories"
                     ></NavItem>
                     <NavItem

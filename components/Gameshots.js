@@ -23,6 +23,7 @@ const slideUpGameshots = keyframes`
 const DivGameshots = styled.div`
     margin: 0 auto 40px auto;     
     width: ${props => props.width}px;
+    display: ${props => props.display};
     /* animation: ${slideUpGameshots} 0.15s ease-in; */
     @media (max-width: ${theme.breakpoints.fullWidthLayout}px) {
         width: 100%;
@@ -59,7 +60,10 @@ export default class Gameshots extends React.Component {
         this.updateWindowDimensions = this.updateWindowDimensions.bind(this);                    
     }
     
-    componentDidMount () {                      
+    componentDidMount () {  
+        this.setState({
+            display: "block"            
+        })                      
         document.addEventListener('keydown', this.onKeyDown)        
         window.addEventListener('resize', this.updateWindowDimensions)
         this.updateWindowDimensions()        
@@ -272,6 +276,7 @@ export default class Gameshots extends React.Component {
 
         return (
             <DivGameshots
+                display={this.state.display}
                 width={masonryWidth - theme.sizes.gapHorizontalThumbGameshot}
             >                    
                 {this.props.url.query.gameshotIndex && bodyStyle}

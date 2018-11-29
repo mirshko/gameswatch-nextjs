@@ -2,6 +2,7 @@ import styled from 'styled-components'
 import TagToken from './TagToken'
 import theme from '../utils/theme'
 import ThumbGame from '../components/ThumbGame'
+var isRetina = require('is-retina')
 
 const DivGameshot = styled.div`
     padding-bottom: 40px;
@@ -81,6 +82,8 @@ export default class Gameshot extends React.Component {
             }
         }
 
+        let picWidth = media.img.aspectRatio < 1 ? 640*(1+isRetina()) : 1000*(1+isRetina())        
+
         return (                
 
             <DivGameshot key={id}>                
@@ -106,8 +109,8 @@ export default class Gameshot extends React.Component {
                             ) : (                                         
                                 // ...or image                                                            
                                 <picture>
-                                    <source srcSet={media.img.url + "?fm=webp"} type="image/webp"/>
-                                    <source srcSet={media.img.url + "?fm=png"} type="image/png"/>
+                                    <source srcSet={media.img.url + "?fm=webp" + "&w=" + picWidth} type="image/webp"/>
+                                    <source srcSet={media.img.url + "?fm=png" + "&w=" + picWidth} type="image/png"/>
                                     <MediaImg 
                                         src={media.img.url}                                                                 
                                         alt={name}                                        
