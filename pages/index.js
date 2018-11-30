@@ -64,7 +64,7 @@ export default class Index extends React.Component {
         super(props);
 
         this.state = {            
-            docTitle: this.props.docTitle            
+            docTitle: this.props.docTitle
         }       
         
         this.updateDocTitle = this.updateDocTitle.bind(this) 

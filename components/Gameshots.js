@@ -49,7 +49,7 @@ export default class Gameshots extends React.Component {
             loadMoreGameshots: true,
             numberOfGameshots: undefined,
             windowWidth: 0, 
-            indexOfGameshotInModal: this.props.url.query.gameshotIndex,                       
+            indexOfGameshotInModal: this.props.url.query.gameshotIndex,           
         }    
         
         this.showModal = this.showModal.bind(this)
@@ -79,7 +79,6 @@ export default class Gameshots extends React.Component {
         // Don't run if the loader is hidden
         if (!isVisible) { return }
 
-        // Find out if we are filtering gameshots by ID or not
         let ref = ''
         if (this.props.filterById !== undefined) { 
             ref = '&& references("' + this.props.filterById + '")'
