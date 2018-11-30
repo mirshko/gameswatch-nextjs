@@ -33,7 +33,7 @@ export default class TagToken extends React.Component {
                 <Link 
                     prefetch passHref
                     href={'/tag?id=' + this.props.tag.id}
-                    as={'/tag/' + this.props.tag.id}
+                    as={'/tag/' + this.props.tag.id}                    
                 > 
                     <TagText onClick={this.props.onClick}>                        
                         {this.props.tag.name}

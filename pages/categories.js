@@ -5,6 +5,7 @@ import sanity from '../lib/sanity'
 import ThumbCategory from '../components/ThumbCategory'
 import theme from '../utils/theme'
 import styled from 'styled-components'
+import VisibilitySensor from 'react-visibility-sensor' 
 
 const DivContainer = styled.div`
     display: ${props => props.display};       
@@ -36,6 +37,7 @@ const CategoryTypeItemLink = styled.a`
 const DivThumbnailsContainer = styled.div`
     width: 100%;                
     display: flex;
+    flex-direction: column;
     justify-content: left;
     @media (max-width: ${theme.breakpoints.breakTheMenu}px) {        
         padding-left: ${theme.sizes.gapVerticalPage}px;            
@@ -55,49 +57,43 @@ const Thumbnails = styled.div`
     }            
 `
 
+const DivLoader = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 40px;
+    margin-bottom: 40px;
+`
+
 export default class Categories extends React.Component {
 
     constructor(props) {
         super(props);
 
-        this.state = {            
+        this.state = {  
+            tags: [],  
+            numberOfLoadedTags: 0,
+            loadMoreTags: true,
+            numberOfTags: undefined,            
             windowWidth: 0,            
             display: "none",
+            currentCategoryTypeId: this.props.url.query.categoryTypeId,
         }                
         
         this.updateWindowDimensions = this.updateWindowDimensions.bind(this);                
     }       
 
-    static async getInitialProps() {
+    static async getInitialProps() {     
         
-        const query = '{' +                                  
-            '"categoryTypes": *[_type == "categoryType" && !(_id in path("drafts.**"))] | order(name asc) {' +
-                '"id": _id,' +
-                'name,' +
-                '"tags": tags[]->{' +
-                    '"id": _id,' +
-                    'name,' +
-                    '"numberOfGameshots": count(*[_type == "gameshot" && references(^._id) && !(_id in path("drafts.**"))]),' +            
-                    '"recentGameshots": *[_type == "gameshot" && references(^._id) && !(_id in path("drafts.**"))] | order(_createdAt desc) {' +
-                        '"img": {' +
-                            '"url": image.asset->url,' + 
-                            '"aspectRatio": image.asset->metadata.dimensions.aspectRatio,' +
-                        '},' +
-                        '"video": {' +
-                            '"url": video.asset->url,' +
-                            '"format": video.format,' +            
-                        '},' +
-                        '"palette": image.asset->metadata.palette' +                                            
-                    '} [0...3]'+            
-                '}' + 
-            '},' +
+        const queryForCategoryTypes = '*[_type == "categoryType" && !(_id in path("drafts.**"))] | order(name asc) {' +
+            '"id": _id,' +
+            'name,' +        
         '}'
-              
-
-        let data = await sanity.fetch(query)                        
-
+        
+        let data = await sanity.fetch(queryForCategoryTypes)                                
+        
         return {                        
-            categoryTypes: data.categoryTypes
+            categoryTypes: data,
         }
     }
 
@@ -112,7 +108,56 @@ export default class Categories extends React.Component {
     componentWillUnmount () {        
         window.removeEventListener('resize', this.updateWindowDimensions);
     }
+
+    getTags = async (from, to, isVisible) => {
+
+        // Don't run if the loader is hidden
+        if (!isVisible) { return }
+
+        const queryForTags = '*[_type == "categoryType" && _id == $categoryTypeId && !(_id in path("drafts.**"))] | order(name asc) {' +    
+            '"numberOfTags": count(tags),' +
+            '"tags": tags[]->{' +
+                '"id": _id,' +
+                'name,' +
+                '"numberOfGameshots": count(*[_type == "gameshot" && references(^._id) && !(_id in path("drafts.**"))]),' +            
+                '"recentGameshots": *[_type == "gameshot" && references(^._id) && !(_id in path("drafts.**"))] | order(_createdAt desc) {' +
+                    '"img": {' +
+                        '"url": image.asset->url,' + 
+                        '"aspectRatio": image.asset->metadata.dimensions.aspectRatio,' +
+                    '},' +
+                    '"video": {' +
+                        '"url": video.asset->url,' +
+                        '"format": video.format,' +            
+                    '},' +
+                    '"palette": image.asset->metadata.palette' +                                            
+                '} [0...3]'+            
+            '} [$from...$to]' + 
+        '} [0]'
+
+        const data = await sanity.fetch(queryForTags, {from: from, to: to, categoryTypeId: this.state.currentCategoryTypeId})
+
+        this.setState((prevState) => ({
+            tags: prevState.tags.concat(data.tags),
+            numberOfLoadedTags: prevState.numberOfLoadedTags + data.tags.length,
+            loadMoreTags: data.numberOfTags == prevState.numberOfLoadedTags + data.tags.length ? false : true,
+        }))
+    }
     
+    restartTags () {
+        this.setState({
+            currentCategoryTypeId: this.props.url.query.categoryTypeId,
+            tags: [],
+            numberOfLoadedTags: 0,
+            loadMoreTags: true,
+        })
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        if (this.props.url.query.categoryTypeId !== prevState.currentCategoryTypeId) {
+            this.restartTags()
+        }
+    }
+
     updateWindowDimensions() {
         this.setState({ 
             windowWidth: window.innerWidth,             
@@ -140,15 +185,10 @@ export default class Categories extends React.Component {
                 color: theme.colors.fontMain,               
             }            
         }
-        
-        const currentCategoryTypeId = this.props.url.query.categoryTypeId
-        const currentCategoryType = this.props.categoryTypes.find(function(element) {
-            return element.id === currentCategoryTypeId
-        })
 
         const widthThumbCategory = this.state.windowWidth > theme.breakpoints.fullWidthLayout ? (theme.sizes.thumbCategoryWidth + "px") : "100%"
 
-        const thumbsOfCategories = currentCategoryType.tags.map((category) =>
+        const thumbsOfCategories = this.state.tags.map((category) =>
             <ThumbCategory 
                 id={category.id}
                 key={category.id} 
@@ -196,7 +236,18 @@ export default class Categories extends React.Component {
                     <DivThumbnailsContainer>
                         <Thumbnails>
                             {thumbsOfCategories}
-                        </Thumbnails>        
+                        </Thumbnails>    
+                        {
+                            this.state.loadMoreTags &&
+                                <VisibilitySensor
+                                    onChange={(e) => this.getTags(this.state.numberOfLoadedTags, this.state.numberOfLoadedTags + theme.variables.numberOfTagsToGet, e)}
+                                    intervalDelay={800}
+                                >
+                                    <DivLoader>                                
+                                        <img src="../static/icons/loader.svg" />
+                                    </DivLoader>  
+                                </VisibilitySensor>
+                        }    
                     </DivThumbnailsContainer>
                 </DivContainer>
             </Page>
