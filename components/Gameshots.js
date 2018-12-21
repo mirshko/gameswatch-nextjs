@@ -45,13 +45,9 @@ export default class Gameshots extends React.Component {
     constructor(props) {
         super(props);            
         
-        this.state = {            
-            gameshots: [],                                       
-            numberOfLoadedGameshots: 0,
-            loadMoreGameshots: true,
-            numberOfGameshots: undefined,
-            windowWidth: 0, 
-            indexOfGameshotInModal: this.props.url.query.gameshotIndex,                       
+        this.state = {                        
+            windowWidth: 0,
+            indexOfGameshotInModal: this.props.url.query.gameshotIndex,
         }    
         
         this.showModal = this.showModal.bind(this)
@@ -63,9 +59,14 @@ export default class Gameshots extends React.Component {
     }
     
     componentDidMount () {          
-        this.setState({
-            display: "block"            
-        })                          
+        
+        this.setState({            
+            gameshots: history.state.options.gameshots ? history.state.options.gameshots : [],
+            numberOfLoadedGameshots: history.state.options.numberOfLoadedGameshots ? history.state.options.numberOfLoadedGameshots : 0,
+            loadMoreGameshots: history.state.options.loadMoreGameshots ? history.state.options.loadMoreGameshots : true,            
+            display: "block",
+        })      
+
         document.addEventListener('keydown', this.onKeyDown)        
         window.addEventListener('resize', this.updateWindowDimensions)
         this.updateWindowDimensions()                                           
@@ -138,18 +139,28 @@ export default class Gameshots extends React.Component {
             gameshots: prevState.gameshots.concat(data.gameshots),            
             numberOfLoadedGameshots: prevState.numberOfLoadedGameshots + data.gameshots.length,            
             loadMoreGameshots: this.props.numberOfGameshots == prevState.numberOfLoadedGameshots + data.gameshots.length ? false : true,            
-        }))  
+        }), () => {            
+            // Add some useful parts of this state into browser history
+            const url = `${this.props.routerPathname}?id=${this.props.routerQueryId}`
+            const as = this.props.routerAs
+            const stateToStore = history.state.options
+            stateToStore.gameshots = this.state.gameshots
+            stateToStore.numberOfLoadedGameshots = this.state.numberOfLoadedGameshots
+            stateToStore.loadMoreGameshots = this.state.loadMoreGameshots
+            Router.replace(url, as, stateToStore)
+        })  
     }   
     
     restartGameshots () {
         this.setState({
-            gameshots: [],
-            numberOfLoadedGameshots: 0,
-            loadMoreGameshots: true,
-        })
+            gameshots: history.state.options.gameshots ? history.state.options.gameshots : [],
+            numberOfLoadedGameshots: history.state.options.numberOfLoadedGameshots ? history.state.options.numberOfLoadedGameshots : 0,
+            loadMoreGameshots: history.state.options.loadMoreGameshots ? history.state.options.loadMoreGameshots : true,                        
+        })        
     }
 
     componentDidUpdate (prevProps) {
+        // console.log("componentDidUpdate")
         if (this.props.filterById !== prevProps.filterById) {
             this.restartGameshots()
         }
@@ -170,8 +181,7 @@ export default class Gameshots extends React.Component {
             const url = `${this.props.routerPathname}?gameshotIndex=${index}&id=${this.props.routerQueryId}`
             const as = `/gameshot/${this.state.gameshots[index].id}`
             Router.push(url, as, {shallow: true})
-            this.props.updateDocTitle('"' + this.state.gameshots[index].name + '" from ' + this.state.gameshots[index].game.name)            
-            console.log(window.history.state)
+            this.props.updateDocTitle('"' + this.state.gameshots[index].name + '" from ' + this.state.gameshots[index].game.name)                        
         })         
 
     }
@@ -265,15 +275,19 @@ export default class Gameshots extends React.Component {
         const masonryOptions = {
             transitionDuration: 0,            
         }
-
-        const gameshotThumbs = this.state.gameshots.map((gameshot, index) =>
-            <ThumbGameshot
-                context={this.props.context}                
-                key={gameshot.id} 
-                onClick={(e) => this.showModal(index, e)}                                
-                gameshot={gameshot}
-            />
-        )                
+        
+        let gameshotThumbs = []
+        
+        if (this.state.gameshots) {
+            gameshotThumbs = this.state.gameshots.map((gameshot, index) =>
+                <ThumbGameshot
+                    context={this.props.context}                
+                    key={gameshot.id} 
+                    onClick={(e) => this.showModal(index, e)}                                
+                    gameshot={gameshot}
+                />
+            )   
+        }             
 
         let bodyStyle
         

@@ -26,14 +26,7 @@ const ParagraphCopyright = styled.p`
 export default class Game extends React.Component {    
 
     constructor(props) {
-        super(props);
-
-        this.state = {
-            docTitle: this.props.docTitle
-        }
-        
-        this.updateDocTitle = this.updateDocTitle.bind(this) 
-        // this.gameshots = React.createRef()
+        super(props);                
     }
 
     static async getInitialProps(req) {
@@ -62,8 +55,7 @@ export default class Game extends React.Component {
     componentWillReceiveProps (nextProps) {                
         // Update the doc title when the props.docTitle has changed
         if (this.props.docTitle !== nextProps.docTitle) {
-            this.updateDocTitle(nextProps.docTitle)
-            // this.gameshots.current.restartGameshots()
+            this.updateDocTitle(nextProps.docTitle)            
         }        
     }
 
@@ -90,14 +82,14 @@ export default class Game extends React.Component {
             >                
 
                 <Head>
-                    <title>{this.state.docTitle}</title>  
-                    <meta name="description" content={this.state.docTitle}></meta>
+                    <title>{this.props.docTitle}</title>  
+                    <meta name="description" content={this.props.docTitle}></meta>
                     <meta name="keywords" content="game,games,design,gaming,game design"></meta>
                     <meta name="author" content="Marek Minor"></meta>   
                     <meta property="og:image" content={this.props.game.urlImgThumbnail}></meta>
                     <meta property="og:type" content="website"></meta>
                     <meta name="twitter:card" content="summary_large_image"></meta>
-                    <meta name="twitter:description" content={this.state.docTitle}></meta>
+                    <meta name="twitter:description" content={this.props.docTitle}></meta>
                     <meta name="twitter:image" content={this.props.game.urlImgThumbnail}></meta>
                 </Head>
                 
