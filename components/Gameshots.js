@@ -139,7 +139,7 @@ export default class Gameshots extends React.Component {
         }), () => {                        
             const url = `${this.props.routerPathname}?id=${this.props.routerQueryId}`
             const as = this.props.routerAs                                    
-            this.handleRouterAndStoreStateInHistory (url, as, true, false)
+            this.handleRouterAndStoreStateInHistory (url, as, false, false)
         })  
     }   
     
@@ -183,14 +183,14 @@ export default class Gameshots extends React.Component {
     showModal (index, e) {
         const url = `${this.props.routerPathname}?gameshotIndex=${index}&id=${this.props.routerQueryId}`
         const as = `/gameshot/${this.state.gameshots[index].id}`
-        this.handleRouterAndStoreStateInHistory(url, as, true, true)
+        this.handleRouterAndStoreStateInHistory(url, as, false, true)
         // this.props.updateDocTitle('"' + this.state.gameshots[index].name + '" from ' + this.state.gameshots[index].game.name)                               
     }
 
     hideModal () {                
         const url = `${this.props.routerPathname}?id=${this.props.routerQueryId}`
         const as = this.props.routerAs
-        this.handleRouterAndStoreStateInHistory(url, as, true, true)
+        this.handleRouterAndStoreStateInHistory(url, as, false, true)
         // this.props.updateDocTitle(this.props.docTitle)        
         
     }
@@ -229,7 +229,7 @@ export default class Gameshots extends React.Component {
         const newGameshotIndex = parseInt(this.props.url.query.gameshotIndex) + increment
         const url = `${this.props.routerPathname}?gameshotIndex=${newGameshotIndex}&id=${this.props.routerQueryId}`
         const as = `/gameshot/${this.state.gameshots[newGameshotIndex].id}`
-        this.handleRouterAndStoreStateInHistory(url, as, true, true)        
+        this.handleRouterAndStoreStateInHistory(url, as, false, true)        
         
         // If this is the last one
         // if (this.props.url.query.gameshotIndex == this.state.gameshots.length - 1) {                        
