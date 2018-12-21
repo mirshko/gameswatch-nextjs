@@ -1,5 +1,6 @@
 import Head from 'next/head'
 import Page from '../components/Page'
+import Router from 'next/router'
 import sanity from '../lib/sanity'
 import ThumbGame from '../components/ThumbGame'
 import theme from '../utils/theme'
@@ -58,47 +59,52 @@ export default class Games extends React.Component {
     constructor(props) {
         super(props);
 
-        this.state = {                   
-            games: [],
-            numberOfLoadedGames: 0,
-            loadMoreGames: true,     
+        this.state = {                               
             windowWidth: 0,            
-            display: "none",             
-        }                    
+            display: "none",                           
+        }                           
 
-        this.updateWindowDimensions = this.updateWindowDimensions.bind(this)
+        this.updateWindowDimensions = this.updateWindowDimensions.bind(this)        
     }
 
     static async getInitialProps() { 
         
         const queryForNumberOfGames = 'count(*[_type == "game" && !(_id in path("drafts.**"))])'
-        const data = await sanity.fetch(queryForNumberOfGames)
-        
+        const data = await sanity.fetch(queryForNumberOfGames)                
+
         return {
             numberOfGames: data,            
         }
     }
 
-    componentDidMount () {                        
-        this.updateWindowDimensions()
-        window.addEventListener('resize', this.updateWindowDimensions)
+    componentDidMount () {                 
+        
         this.setState({
-            display: "block"
-        })  
-    }  
+            games: history.state.options.games ? history.state.options.games : [],
+            numberOfLoadedGames: history.state.options.numberOfLoadedGames ? history.state.options.numberOfLoadedGames : 0,
+            loadMoreGames: history.state.options.loadMoreGames ? history.state.options.loadMoreGames : true, 
+            display: "block",
+        })                        
+        
+        this.updateWindowDimensions()                
+        window.addEventListener('resize', this.updateWindowDimensions)
+    } 
     
-    componentWillUnmount () {        
-        window.removeEventListener('resize', this.updateWindowDimensions);
+    componentWillUnmount () {
+        window.removeEventListener('resize', this.updateWindowDimensions)
     }
     
     updateWindowDimensions() {
         this.setState({ 
             windowWidth: window.innerWidth,             
         })
-    }
+    }   
 
-    getGames = async (from, to) => {
+    getGames = async (from, to, isVisible) => {
         
+        // Don't run if the loader is hidden
+        if (!isVisible) { return }
+
         const queryForGames = '*[_type == "game" && !(_id in path("drafts.**"))] | order(name asc) {' +
             '"id": _id,' +
             'name, ' +            
@@ -116,8 +122,16 @@ export default class Games extends React.Component {
         this.setState((prevState) => ({            
             games: prevState.games.concat(data),            
             numberOfLoadedGames: prevState.numberOfLoadedGames + data.length,            
-            loadMoreGames: this.props.numberOfGames == prevState.numberOfLoadedGames + data.length ? false : true,            
-        }))
+            loadMoreGames: this.props.numberOfGames == prevState.numberOfLoadedGames + data.length ? false : true,       
+            display: "block"     
+        }), () => {            
+            Router.replace(this.props.url.asPath, this.props.url.asPath, {
+                shallow: true, 
+                games: this.state.games,
+                numberOfLoadedGames: this.state.numberOfLoadedGames,
+                loadMoreGames: this.state.loadMoreGames,                
+            })
+        })
 
     }    
 
@@ -129,21 +143,24 @@ export default class Games extends React.Component {
         if (this.state.windowWidth < (theme.breakpoints.fullWidthLayout + 1)) {
             widthThumbnails = "100%"
             marginLeftThumbnails = 0
+        }       
+        
+        let gameThumbs = []
+        if (this.state.games) {
+            gameThumbs = this.state.games.map((game) =>
+                <GameThumbnailWrapper key={game.id}>
+                    <ThumbGame 
+                        id={game.id}                    
+                        layout={"vertical"}
+                        name={game.name}
+                        numberOfGameshots={game.numberOfGameshots} 
+                        media={game.media}
+                        width={"100%"}                                        
+                        showTitle={true}
+                    />
+                </GameThumbnailWrapper>
+            )
         }
-
-        const thumbsOfGames = this.state.games.map((game) =>
-            <GameThumbnailWrapper key={game.id}>
-                <ThumbGame 
-                    id={game.id}                    
-                    layout={"vertical"}
-                    name={game.name}
-                    numberOfGameshots={game.numberOfGameshots} 
-                    media={game.media}
-                    width={"100%"}                                        
-                    showTitle={true}
-                />
-            </GameThumbnailWrapper>
-        )
 
         return (
             <Page 
@@ -165,13 +182,13 @@ export default class Games extends React.Component {
                 <Container display={this.state.display}>
                     <ThumbnailsContainer width={widthThumbnails}>
                         <Thumbnails marginLeft={marginLeftThumbnails}>
-                            {thumbsOfGames}                            
+                            {gameThumbs}                            
                         </Thumbnails>        
                     </ThumbnailsContainer> 
                     {
                         this.state.loadMoreGames &&
                             <VisibilitySensor
-                                onChange={(e) => this.getGames(this.state.numberOfLoadedGames, this.state.numberOfLoadedGames + theme.variables.numberOfGamesToGet)}
+                                onChange={(e) => this.getGames(this.state.numberOfLoadedGames, this.state.numberOfLoadedGames + theme.variables.numberOfGamesToGet, e)}
                                 intervalDelay={500}
                             >
                                 <DivLoader>                                

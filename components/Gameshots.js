@@ -7,7 +7,9 @@ import theme from '../utils/theme'
 import ThumbGameshot from '../components/ThumbGameshot'
 import VisibilitySensor from 'react-visibility-sensor'
 import sanity from '../lib/sanity'
-import styled, { keyframes } from 'styled-components'
+import styled, {keyframes} from 'styled-components'
+
+
 
 const slideUpGameshots = keyframes`
     from {
@@ -41,8 +43,8 @@ const DivLoader = styled.div`
 export default class Gameshots extends React.Component {        
 
     constructor(props) {
-        super(props);
-
+        super(props);            
+        
         this.state = {            
             gameshots: [],                                       
             numberOfLoadedGameshots: 0,
@@ -60,20 +62,20 @@ export default class Gameshots extends React.Component {
         this.updateWindowDimensions = this.updateWindowDimensions.bind(this);                    
     }
     
-    componentDidMount () {  
+    componentDidMount () {          
         this.setState({
             display: "block"            
-        })                      
+        })                          
         document.addEventListener('keydown', this.onKeyDown)        
         window.addEventListener('resize', this.updateWindowDimensions)
-        this.updateWindowDimensions()        
-    }  
-    
+        this.updateWindowDimensions()                                           
+    }      
+
     componentWillUnmount () {
         document.removeEventListener('keydown', this.onKeyDown)
         window.removeEventListener('resize', this.updateWindowDimensions);
-    }
-    
+    }        
+
     getGameshots = async (from, to, isVisible) => {                      
         
         // Don't run if the loader is hidden
@@ -136,7 +138,7 @@ export default class Gameshots extends React.Component {
             gameshots: prevState.gameshots.concat(data.gameshots),            
             numberOfLoadedGameshots: prevState.numberOfLoadedGameshots + data.gameshots.length,            
             loadMoreGameshots: this.props.numberOfGameshots == prevState.numberOfLoadedGameshots + data.gameshots.length ? false : true,            
-        }))        
+        }))  
     }   
     
     restartGameshots () {
@@ -162,25 +164,29 @@ export default class Gameshots extends React.Component {
 
     showModal (index, e) {
         
-        this.setState({            
+        this.setState((prevState) => ({            
             indexOfGameshotInModal: index,            
+        }), () => {
+            const url = `${this.props.routerPathname}?gameshotIndex=${index}&id=${this.props.routerQueryId}`
+            const as = `/gameshot/${this.state.gameshots[index].id}`
+            Router.push(url, as, {shallow: true})
+            this.props.updateDocTitle('"' + this.state.gameshots[index].name + '" from ' + this.state.gameshots[index].game.name)            
+            console.log(window.history.state)
         })         
 
-        const url = `${this.props.routerPathname}?gameshotIndex=${index}&id=${this.props.routerQueryId}`
-        const as = `/gameshot/${this.state.gameshots[index].id}`
-        Router.push(url, as, {shallow: true})
-        
-        this.props.updateDocTitle('"' + this.state.gameshots[index].name + '" from ' + this.state.gameshots[index].game.name)
-        
     }
 
-    hideModal () {                              
+    hideModal () {
         
-        const url = `${this.props.routerPathname}?id=${this.props.routerQueryId}`
-        const as = this.props.routerAs
-        Router.push(url, as, {shallow: true})
-
-        this.props.updateDocTitle(this.props.docTitle)
+        this.setState((prevState) => ({            
+            indexOfGameshotInModal: null,            
+        }), () => {
+            const url = `${this.props.routerPathname}?id=${this.props.routerQueryId}`
+            const as = this.props.routerAs
+            Router.push(url, as, {shallow: true})        
+            this.props.updateDocTitle(this.props.docTitle)
+        })
+        
     }
     
     hideModalByClickingOnOverlay (e) {
@@ -213,7 +219,7 @@ export default class Gameshots extends React.Component {
     }
 
     handlePrevGameshot () {        
-        if (this.state.indexOfGameshotInModal !== 0) {            
+        if (this.state.indexOfGameshotInModal !== 0) {
             this.setState((prevState) => ({
                 indexOfGameshotInModal: prevState.indexOfGameshotInModal - 1,                
             }), () => {
