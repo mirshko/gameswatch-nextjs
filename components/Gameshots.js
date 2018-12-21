@@ -47,13 +47,10 @@ export default class Gameshots extends React.Component {
         
         this.state = {                        
             windowWidth: 0,
-            indexOfGameshotInModal: this.props.url.query.gameshotIndex,
         }    
         
         this.showModal = this.showModal.bind(this)
-        this.hideModal = this.hideModal.bind(this)   
-        this.handlePrevGameshot = this.handlePrevGameshot.bind(this)   
-        this.handleNextGameshot = this.handleNextGameshot.bind(this) 
+        this.hideModal = this.hideModal.bind(this)           
         this.onKeyDown = this.onKeyDown.bind(this)                                
         this.updateWindowDimensions = this.updateWindowDimensions.bind(this);                    
     }
@@ -139,17 +136,18 @@ export default class Gameshots extends React.Component {
             gameshots: prevState.gameshots.concat(data.gameshots),            
             numberOfLoadedGameshots: prevState.numberOfLoadedGameshots + data.gameshots.length,            
             loadMoreGameshots: this.props.numberOfGameshots == prevState.numberOfLoadedGameshots + data.gameshots.length ? false : true,            
-        }), () => {            
-            // Add some useful parts of this state into browser history
+        }), () => {                        
             const url = `${this.props.routerPathname}?id=${this.props.routerQueryId}`
-            const as = this.props.routerAs
-            const stateToStore = history.state.options
-            stateToStore.gameshots = this.state.gameshots
-            stateToStore.numberOfLoadedGameshots = this.state.numberOfLoadedGameshots
-            stateToStore.loadMoreGameshots = this.state.loadMoreGameshots
-            Router.replace(url, as, stateToStore)
+            const as = this.props.routerAs                                    
+            this.handleRouterAndStoreStateInHistory (url, as, true, false)
         })  
     }   
+    
+    componentDidUpdate (prevProps) {        
+        if (this.props.filterById !== prevProps.filterById) {
+            this.restartGameshots()
+        }
+    }
     
     restartGameshots () {
         this.setState({
@@ -159,13 +157,22 @@ export default class Gameshots extends React.Component {
         })        
     }
 
-    componentDidUpdate (prevProps) {
-        // console.log("componentDidUpdate")
-        if (this.props.filterById !== prevProps.filterById) {
-            this.restartGameshots()
+    handleRouterAndStoreStateInHistory (url, as, shallow, push) {                
+        
+        const options = {
+            shallow: shallow,
+            gameshots: this.state.gameshots,
+            numberOfLoadedGameshots: this.state.numberOfLoadedGameshots,
+            loadMoreGameshots: this.state.loadMoreGameshots,
         }
+        
+        if (push) {
+            Router.push(url, as, options)        
+        } else {
+            Router.replace(url, as, options)        
+        }
+        
     }
-
 
     updateWindowDimensions() {
         this.setState({ 
@@ -174,28 +181,17 @@ export default class Gameshots extends React.Component {
     }
 
     showModal (index, e) {
-        
-        this.setState((prevState) => ({            
-            indexOfGameshotInModal: index,            
-        }), () => {
-            const url = `${this.props.routerPathname}?gameshotIndex=${index}&id=${this.props.routerQueryId}`
-            const as = `/gameshot/${this.state.gameshots[index].id}`
-            Router.push(url, as, {shallow: true})
-            this.props.updateDocTitle('"' + this.state.gameshots[index].name + '" from ' + this.state.gameshots[index].game.name)                        
-        })         
-
+        const url = `${this.props.routerPathname}?gameshotIndex=${index}&id=${this.props.routerQueryId}`
+        const as = `/gameshot/${this.state.gameshots[index].id}`
+        this.handleRouterAndStoreStateInHistory(url, as, true, true)
+        // this.props.updateDocTitle('"' + this.state.gameshots[index].name + '" from ' + this.state.gameshots[index].game.name)                               
     }
 
-    hideModal () {
-        
-        this.setState((prevState) => ({            
-            indexOfGameshotInModal: null,            
-        }), () => {
-            const url = `${this.props.routerPathname}?id=${this.props.routerQueryId}`
-            const as = this.props.routerAs
-            Router.push(url, as, {shallow: true})        
-            this.props.updateDocTitle(this.props.docTitle)
-        })
+    hideModal () {                
+        const url = `${this.props.routerPathname}?id=${this.props.routerQueryId}`
+        const as = this.props.routerAs
+        this.handleRouterAndStoreStateInHistory(url, as, true, true)
+        // this.props.updateDocTitle(this.props.docTitle)        
         
     }
     
@@ -215,43 +211,30 @@ export default class Gameshots extends React.Component {
         // LEFT
         if (e.keyCode === 37) {
             if (this.props.url.query.gameshotIndex) {
-                this.handlePrevGameshot()
+                this.switchGameshotInModal(null, -1)
             }            
         }
 
         // RIGHT
         if (e.keyCode === 39) {
             if (this.props.url.query.gameshotIndex) {
-                this.handleNextGameshot()
+                this.switchGameshotInModal(null, 1)
             }
         }
 
     }
 
-    handlePrevGameshot () {        
-        if (this.state.indexOfGameshotInModal !== 0) {
-            this.setState((prevState) => ({
-                indexOfGameshotInModal: prevState.indexOfGameshotInModal - 1,                
-            }), () => {
-                const href = `${this.props.routerPathname}?gameshotIndex=${this.state.indexOfGameshotInModal}&id=${this.props.routerQueryId}`
-                const as = `/gameshot/${this.state.gameshots[this.state.indexOfGameshotInModal].id}`
-                Router.push(href, as, {shallow: true})
-                this.props.updateDocTitle('"' + this.state.gameshots[this.state.indexOfGameshotInModal].name + '" from ' + this.state.gameshots[this.state.indexOfGameshotInModal].game.name)
-            })
-        }        
-    }
+    switchGameshotInModal (e, increment) {                
+                
+        const newGameshotIndex = parseInt(this.props.url.query.gameshotIndex) + increment
+        const url = `${this.props.routerPathname}?gameshotIndex=${newGameshotIndex}&id=${this.props.routerQueryId}`
+        const as = `/gameshot/${this.state.gameshots[newGameshotIndex].id}`
+        this.handleRouterAndStoreStateInHistory(url, as, true, true)        
+        
+        // If this is the last one
+        // if (this.props.url.query.gameshotIndex == this.state.gameshots.length - 1) {                        
+        // this.props.updateDocTitle('"' + this.state.gameshots[this.state.indexOfGameshotInModal].name + '" from ' + this.state.gameshots[this.state.indexOfGameshotInModal].game.name)                            
 
-    handleNextGameshot () {
-        if (this.state.indexOfGameshotInModal !== this.state.gameshots.length - 1) {            
-            this.setState((prevState) => ({
-                indexOfGameshotInModal: prevState.indexOfGameshotInModal + 1,                
-            }), () => {
-                const href = `${this.props.routerPathname}?gameshotIndex=${this.state.indexOfGameshotInModal}&id=${this.props.routerQueryId}`
-                const as = `/gameshot/${this.state.gameshots[this.state.indexOfGameshotInModal].id}`
-                Router.push(href, as, {shallow: true})
-                this.props.updateDocTitle('"' + this.state.gameshots[this.state.indexOfGameshotInModal].name + '" from ' + this.state.gameshots[this.state.indexOfGameshotInModal].game.name)
-            })
-        }
     }
 
     render () {
@@ -302,13 +285,14 @@ export default class Gameshots extends React.Component {
                 display={this.state.display}
                 width={masonryWidth - theme.sizes.gapHorizontalThumbGameshot}
             >                    
-                {this.props.url.query.gameshotIndex && bodyStyle}
-                {this.props.url.query.gameshotIndex &&                    
+                { this.props.url.query.gameshotIndex && bodyStyle }
+                { this.props.url.query.gameshotIndex && 
+                  this.state.gameshots &&
                     <Modal 
                         hideModal=                      {this.hideModal} 
                         hideModalByClickingOnOverlay=   {(e) => this.hideModalByClickingOnOverlay(e)}
-                        handlePrevGameshot=             {this.handlePrevGameshot}
-                        handleNextGameshot=             {this.handleNextGameshot}
+                        handlePrevGameshot=             {(e) => this.switchGameshotInModal(e, -1)}
+                        handleNextGameshot=             {(e) => this.switchGameshotInModal(e, 1)}
                         indexOfGameshotInModal=         {this.props.url.query.gameshotIndex}
                         numberOfGameshots=              {this.state.gameshots.length}
                     >                        

@@ -46,7 +46,7 @@ const theme = {
         metaImage: "https://cdn.sanity.io/images/foij3hbc/production/0dabbb11d32002fd086386468807c8dc51cde868-800x600.png",
     },
     variables: {
-        numberOfGameshotsToGet: 8, // 30
+        numberOfGameshotsToGet: 30, // 8
         numberOfGamesToGet: 42, // 8
         numberOfTagsToGet: 36,
     }

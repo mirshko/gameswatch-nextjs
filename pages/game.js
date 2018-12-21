@@ -26,7 +26,13 @@ const ParagraphCopyright = styled.p`
 export default class Game extends React.Component {    
 
     constructor(props) {
-        super(props);                
+        super(props);
+
+        // this.state = {
+        //     docTitle: this.props.docTitle
+        // }
+        
+        // this.updateDocTitle = this.updateDocTitle.bind(this)         
     }
 
     static async getInitialProps(req) {
@@ -52,18 +58,18 @@ export default class Game extends React.Component {
         }
     }
     
-    componentWillReceiveProps (nextProps) {                
-        // Update the doc title when the props.docTitle has changed
-        if (this.props.docTitle !== nextProps.docTitle) {
-            this.updateDocTitle(nextProps.docTitle)            
-        }        
-    }
+    // componentWillReceiveProps (nextProps) {                
+    //     // Update the doc title when the props.docTitle has changed
+    //     if (this.props.docTitle !== nextProps.docTitle) {
+    //         this.updateDocTitle(nextProps.docTitle)            
+    //     }        
+    // }
 
-    updateDocTitle (title) {
-        this.setState({
-            docTitle: title
-        })
-    }
+    // updateDocTitle (title) {
+    //     this.setState({
+    //         docTitle: title
+    //     })
+    // }
 
     render() {   
         
@@ -98,12 +104,11 @@ export default class Game extends React.Component {
                     routerPathname="/game"
                     routerQueryId={this.props.game.id}                            
                     routerAs={"/game/" + this.props.game.id}
-                    updateDocTitle={this.updateDocTitle}
-                    docTitle={this.props.docTitle}
+                    // updateDocTitle={this.updateDocTitle}
+                    // docTitle={this.props.docTitle}
                     url={this.props.url}
                     filterById={this.props.game.id}  
-                    numberOfGameshots={this.props.game.numberOfGameshots}
-                    // ref={this.gameshots}                  
+                    numberOfGameshots={this.props.game.numberOfGameshots}                            
                 ></Gameshots> 
                 
                 <DivCopyright>{copyright}</DivCopyright>
