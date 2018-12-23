@@ -93,6 +93,7 @@ export default class Gameshots extends React.Component {
                     '"img": {' +
                         '"url": image.asset->url,' +
                         '"aspectRatio": image.asset->metadata.dimensions.aspectRatio,' +
+                        '"width": image.asset->metadata.dimensions.width,' +                        
                     '},' +
                     '"video": {' +
                         '"url": video.asset->url,' +

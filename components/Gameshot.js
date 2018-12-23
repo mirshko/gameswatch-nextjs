@@ -81,8 +81,8 @@ export default class Gameshot extends React.Component {
                 top: 0, bottom: 0, left: 0, right: 0
             }
         }
-
-        let picWidth = media.img.aspectRatio < 1 ? 640*(1+isRetina()) : 1000*(1+isRetina())        
+        
+        let picWidth = media.img.aspectRatio < 1 ? 640*(1+isRetina()) : 1000*(1+isRetina())                      
 
         return (                
 
@@ -109,14 +109,14 @@ export default class Gameshot extends React.Component {
                             ) : (                                         
                                 // ...or image                                                            
                                 <picture>
-                                    <source srcSet={media.img.url + "?fm=webp" + "&w=" + picWidth} type="image/webp"/>
-                                    <source srcSet={media.img.url + "?fm=png" + "&w=" + picWidth} type="image/png"/>
+                                    <source srcSet={media.img.url + "?fm=webp" + "&w=" + picWidth + "&fit=max"} type="image/webp"/>
+                                    <source srcSet={media.img.url + "?fm=png"  + "&w=" + picWidth + "&fit=max"} type="image/png"/>
                                     <MediaImg 
                                         src={media.img.url}                                                                 
                                         alt={name}                                        
                                     />                                
-                                </picture>                                
-                            )}                             
+                                </picture>                                   
+                            )}                                           
                         </DivMediaWrapper> 
                     </DivMediaWrapperOuter>                                    
 
@@ -139,7 +139,7 @@ export default class Gameshot extends React.Component {
                         width={"auto"}                                                        
                     />                                        
 
-                    <DivTags>{tags}</DivTags>
+                    <DivTags>{tags}</DivTags>                    
                     
                     <Platform>{platform.name}&nbsp;&nbsp;•&nbsp;&nbsp;{device.name}</Platform>
 

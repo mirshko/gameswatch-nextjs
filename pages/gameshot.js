@@ -31,6 +31,7 @@ export default class GameshotPage extends React.Component {
                     '"img": {' +
                         '"url": image.asset->url,' +
                         '"aspectRatio": image.asset->metadata.dimensions.aspectRatio,' +
+                        '"width": image.asset->metadata.dimensions.width,' +
                     '},' +
                     '"video": {' +
                         '"url": video.asset->url,' +
