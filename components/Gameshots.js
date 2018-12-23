@@ -36,8 +36,8 @@ const DivLoader = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 40px;
-    margin-bottom: 40px;
+    margin-top: ${props => props.margin}px;
+    margin-bottom: ${props => props.margin}px;
 `
 
 export default class Gameshots extends React.Component {        
@@ -47,6 +47,7 @@ export default class Gameshots extends React.Component {
         
         this.state = {                        
             windowWidth: 0,
+            fetchingGameshots: false
         }    
         
         this.showModal = this.showModal.bind(this)
@@ -136,6 +137,7 @@ export default class Gameshots extends React.Component {
             gameshots: prevState.gameshots.concat(data.gameshots),            
             numberOfLoadedGameshots: prevState.numberOfLoadedGameshots + data.gameshots.length,            
             loadMoreGameshots: this.props.numberOfGameshots == prevState.numberOfLoadedGameshots + data.gameshots.length ? false : true,            
+            fetchingGameshots: false,
         }), () => {                        
             const url = this.props.url.query.gameshotIndex ? history.state.url : `${this.props.routerPathname}?id=${this.props.routerQueryId}`
             const as =  this.props.url.query.gameshotIndex ? history.state.as  : this.props.routerAs                        
@@ -225,25 +227,30 @@ export default class Gameshots extends React.Component {
     }
 
     switchGameshotInModal (e, increment) {                
-        
-        if (this.props.url.query.gameshotIndex == 0 && increment == -1) { return }
+                
+        if (this.props.url.query.gameshotIndex == 0 && increment == -1) { return }        
         if (this.props.url.query.gameshotIndex == this.props.numberOfGameshots-1 && increment == 1) { return }
-
-        const newGameshotIndex = parseInt(this.props.url.query.gameshotIndex) + increment
-        const url = `${this.props.routerPathname}?gameshotIndex=${newGameshotIndex}&id=${this.props.routerQueryId}`
-        const as = `/gameshot/${this.state.gameshots[newGameshotIndex].id}`
-        this.handleRouterAndStoreStateInHistory(url, as, false, true)        
         
-        this.preloadGameshots()                
-    }
-
-    preloadGameshots () {
-        // If we are at least 3 gameshots before the end of fetched gameshots
-        if (this.props.url.query.gameshotIndex > this.state.gameshots.length - 4) {           
-            if (!this.state.loadMoreGameshots) { return }             
-            this.getGameshots(this.state.numberOfLoadedGameshots, this.state.numberOfLoadedGameshots + theme.variables.numberOfGameshotsToGet, true)                
-        }
-    }
+        const needstoFetchGameshots = this.props.url.query.gameshotIndex > this.state.gameshots.length - 4
+        const newGameshotIndex = parseInt(this.props.url.query.gameshotIndex) + increment
+        
+        if (needstoFetchGameshots) {
+            this.setState({
+                fetchingGameshots: needstoFetchGameshots ? true : false
+            }, () => {
+                this.getGameshots(this.state.numberOfLoadedGameshots, this.state.numberOfLoadedGameshots + theme.variables.numberOfGameshotsToGet, true) 
+            }, () => {
+                const url = `${this.props.routerPathname}?gameshotIndex=${newGameshotIndex}&id=${this.props.routerQueryId}`
+                const as = `/gameshot/${this.state.gameshots[newGameshotIndex].id}`
+                this.handleRouterAndStoreStateInHistory(url, as, false, true)         
+            })
+        } else {
+            const url = `${this.props.routerPathname}?gameshotIndex=${newGameshotIndex}&id=${this.props.routerQueryId}`
+            const as = `/gameshot/${this.state.gameshots[newGameshotIndex].id}`
+            this.handleRouterAndStoreStateInHistory(url, as, false, true)         
+        }                
+        
+    }    
 
     render () {
 
@@ -304,7 +311,14 @@ export default class Gameshots extends React.Component {
                         indexOfGameshotInModal=         {this.props.url.query.gameshotIndex}
                         numberOfGameshots=              {this.props.numberOfGameshots}
                     >                        
-                        <Gameshot gameshot={this.state.gameshots[this.props.url.query.gameshotIndex]}/>
+                        {this.state.fetchingGameshots &&
+                            <DivLoader margin={180}>
+                                <img src="../static/icons/loader.svg" />
+                            </DivLoader>
+                        }                        
+                        {!this.state.fetchingGameshots &&
+                            <Gameshot gameshot={this.state.gameshots[this.props.url.query.gameshotIndex]}/>
+                        }                        
                     </Modal>
                 }
 
@@ -322,9 +336,9 @@ export default class Gameshots extends React.Component {
                             onChange={(e) => this.getGameshots(this.state.numberOfLoadedGameshots, this.state.numberOfLoadedGameshots + theme.variables.numberOfGameshotsToGet, e)}
                             intervalDelay={800}
                         >
-                            <DivLoader>                                
+                            <DivLoader margin={40}>                                
                                 <img src="../static/icons/loader.svg" />
-                            </DivLoader>                            
+                            </DivLoader>
                         </VisibilitySensor>                
                 }
             </DivGameshots>                            
