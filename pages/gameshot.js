@@ -22,6 +22,13 @@ const DivTwo = styled.div`
 
 export default class GameshotPage extends React.Component {
 
+    constructor(props) {
+        super(props)                   
+        this.state = {                        
+            showGameshot: false,
+        }                    
+    }
+    
     static async getInitialProps(req) {
 
         const query = '{' +
@@ -74,6 +81,12 @@ export default class GameshotPage extends React.Component {
         }
     }
 
+    componentDidMount () {
+        this.setState({
+            showGameshot: true
+        })
+    }
+
     render() {        
 
         return (
@@ -94,7 +107,9 @@ export default class GameshotPage extends React.Component {
                 </Head>                
                 <DivOne>
                     <DivTwo>
-                        <Gameshot gameshot={this.props.gameshot} hideModal={null}/>
+                        { this.state.showGameshot &&
+                            <Gameshot gameshot={this.props.gameshot} hideModal={null}/>
+                        }
                     </DivTwo>
                 </DivOne>
             </Page>

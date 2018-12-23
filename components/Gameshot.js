@@ -2,7 +2,7 @@ import styled from 'styled-components'
 import TagToken from './TagToken'
 import theme from '../utils/theme'
 import ThumbGame from '../components/ThumbGame'
-var isRetina = require('is-retina')
+import isRetina from 'is-retina'
 
 const DivGameshot = styled.div`
     padding-bottom: 40px;
@@ -60,9 +60,8 @@ const DivTags = styled.div`
     color: ${theme.colors.fontSecondary};
  `
 
-export default class Gameshot extends React.Component {            
-    
-    
+export default class Gameshot extends React.Component {                
+
     render () {              
 
         const { device, game, id, media, name, platform } = this.props.gameshot                        
