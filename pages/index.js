@@ -96,7 +96,7 @@ export default class Index extends React.Component {
 
         '}'        
             
-        const data = await sanity.fetch(query)
+        const data = await sanity.fetch(query)        
 
         // let recentTags = data.recentTags.sort( (a, b) => {return b.numberOfGameshots - a.numberOfGameshots})
         // recentTags = recentTags.slice(0, 30)
