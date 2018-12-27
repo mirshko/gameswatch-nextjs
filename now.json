@@ -1,11 +1,5 @@
 {
-    "version": 1,    
-    "build": {
-        "env": {
-            "REACT_APP_SANITY_TOKEN": "@sanity_token"
-        }
-    },    
-    "env": {
-        "REACT_APP_SANITY_TOKEN": "@sanity_token"
-    }            
+  "version": 2,
+  "name": "gameswatch-static",
+  "builds": [{ "src": "package.json", "use": "@now/static-build" }]
 }

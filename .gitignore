@@ -3,4 +3,4 @@ node_modules/
 .next
 logs 
 *.log
-out
+dist
