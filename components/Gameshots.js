@@ -314,7 +314,7 @@ export default class Gameshots extends React.Component {
                     >                        
                         {this.state.fetchingGameshots &&
                             <DivLoader margin={180}>
-                                <img src="../static/icons/loader.svg" />
+                                <img src="/static/icons/loader.svg" />
                             </DivLoader>
                         }                        
                         {!this.state.fetchingGameshots &&
@@ -338,7 +338,7 @@ export default class Gameshots extends React.Component {
                             intervalDelay={800}
                         >
                             <DivLoader margin={40}>                                
-                                <img src="../static/icons/loader.svg" />
+                                <img src="/static/icons/loader.svg" />
                             </DivLoader>
                         </VisibilitySensor>                
                 }

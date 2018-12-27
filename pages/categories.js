@@ -244,7 +244,7 @@ export default class Categories extends React.Component {
                                     intervalDelay={800}
                                 >
                                     <DivLoader>                                
-                                        <img src="../static/icons/loader.svg" />
+                                        <img src="/static/icons/loader.svg" />
                                     </DivLoader>  
                                 </VisibilitySensor>
                         }    

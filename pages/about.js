@@ -137,7 +137,7 @@ export default class About extends React.Component {
                         <DivSections>
                             <DivSection>
                                 <DivSectionInner>
-                                    <img src="../static/img/about_instagram.svg"></img>
+                                    <img src="/static/img/about_instagram.svg"></img>
                                     <SectionHeadline>Curious?</SectionHeadline>
                                     <SectionParagraph>I'm posting tidbits of game trivia regularly on the GamesWatch Instagram account.</SectionParagraph>
                                     <Button 
@@ -152,7 +152,7 @@ export default class About extends React.Component {
                             </DivSection>
                             <DivSection>
                                 <DivSectionInner>
-                                    <img src="../static/img/about_support.svg"></img>
+                                    <img src="/static/img/about_support.svg"></img>
                                     <SectionHeadline>Show some love!</SectionHeadline>
                                     <SectionParagraph>GamesWatch is my side project that I invest a lot of my free time and money into. If you love games just like me and want to see GamesWatch succeed, please consider <b>buying me a coffee</b>! Even the smallest contribution can go a long way. Thank you!</SectionParagraph>
                                     <Button 

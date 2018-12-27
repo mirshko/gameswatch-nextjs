@@ -79,9 +79,6 @@ export default class Tag extends React.Component {
     // // }
 
     render() {   
-        
-        const metaImage = this.props.tag.gameshot.imgUrl
-
         return (
             <Page 
                 context="tag" 
@@ -95,11 +92,11 @@ export default class Tag extends React.Component {
                     <meta name="description" content={this.props.docTitle}></meta>
                     <meta name="keywords" content="game,games,design,gaming,game design"></meta>
                     <meta name="author" content="Marek Minor"></meta>   
-                    <meta property="og:image" content={metaImage}></meta>
+                    {this.props.tag.gameshot && (<meta property="og:image" content={this.props.tag.gameshot} />)}
                     <meta property="og:type" content="website"></meta>
                     <meta name="twitter:card" content="summary_large_image"></meta>
                     <meta name="twitter:description" content={this.props.docTitle}></meta>
-                    <meta name="twitter:image" content={metaImage}></meta>                                    
+                    {this.props.tag.gameshot && (<meta property="twitter:image" content={this.props.tag.gameshot.imgUrl} />)}                       
                 </Head>
 
                 <Gameshots                             

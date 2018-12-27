@@ -192,7 +192,7 @@ export default class Games extends React.Component {
                                 intervalDelay={500}
                             >
                                 <DivLoader>                                
-                                    <img src="../static/icons/loader.svg" />
+                                    <img src="/static/icons/loader.svg" />
                                 </DivLoader>                            
                             </VisibilitySensor>                
                     }                   

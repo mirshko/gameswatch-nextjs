@@ -83,8 +83,8 @@ export default class Menu extends React.Component {
                     >
                         <a style={style.logo}>                            
                             <Logo 
-                                urlLogoComplete={this.props.isHeaderImageShown ? "../static/icons/logo-complete-invert.svg" : "../static/icons/logo-complete.svg"}
-                                urlLogoShort={this.props.isHeaderImageShown ? "../static/icons/logo-short-invert.svg" : "../static/icons/logo-short.svg"}
+                                urlLogoComplete={this.props.isHeaderImageShown ? "/static/icons/logo-complete-invert.svg" : "/static/icons/logo-complete.svg"}
+                                urlLogoShort={this.props.isHeaderImageShown ? "/static/icons/logo-short-invert.svg" : "/static/icons/logo-short.svg"}
                             />
                         </a>
                     </Link>
